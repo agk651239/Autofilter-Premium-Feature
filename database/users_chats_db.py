@@ -228,28 +228,28 @@ class Database:
         newvalues = {"$set": value}
         return await self.misc.update_one(myquery, newvalues)
 
-async def is_user_verified(self, user_id):
-    user = await self.get_notcopy_user(user_id)
+    async def is_user_verified(self, user_id):
+        user = await self.get_notcopy_user(user_id)
 
-    try:
-        verified_time = user["last_verified"]
-    except Exception:
-        return False
+        try:
+            verified_time = user["last_verified"]
+        except Exception:
+            return False
 
-    if verified_time is None:
-        return False
+        if verified_time is None:
+            return False
 
-    ist_timezone = pytz.timezone("Asia/Kolkata")
-    current_time = datetime.datetime.now(tz=ist_timezone)
+        ist_timezone = pytz.timezone("Asia/Kolkata")
+        current_time = datetime.datetime.now(tz=ist_timezone)
 
-    if verified_time.tzinfo is None:
-        verified_time = ist_timezone.localize(verified_time)
-    else:
-        verified_time = verified_time.astimezone(ist_timezone)
+        if verified_time.tzinfo is None:
+            verified_time = ist_timezone.localize(verified_time)
+        else:
+            verified_time = verified_time.astimezone(ist_timezone)
 
-    expire_time = verified_time + datetime.timedelta(seconds=VERIFY_EXPIRE)
+        expire_time = verified_time + datetime.timedelta(seconds=VERIFY_EXPIRE)
 
-    return current_time < expire_time
+        return current_time < expire_time
     
     async def user_verified(self, user_id):
         user = await self.get_notcopy_user(user_id)
