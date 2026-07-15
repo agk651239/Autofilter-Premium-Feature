@@ -46,6 +46,9 @@ async def give_filter(client, message):
         except Exception:
             await message.react(emoji="⚡️", big=True)
     await mdb.update_top_messages(message.from_user.id, message.text)
+    # ===== Admin Only Search =====
+    if message.from_user.id not in ADMINS:
+        return
     if message.chat.id != SUPPORT_CHAT_ID:
         settings = await get_settings(message.chat.id)
         try:
