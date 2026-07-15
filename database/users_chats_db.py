@@ -253,18 +253,26 @@ class Database:
     
     async def user_verified(self, user_id):
         user = await self.get_notcopy_user(user_id)
+
         try:
-            pastDate = user["second_time_verified"]
+            verified_time = user["second_time_verified"]
         except Exception:
-            user = await self.get_notcopy_user(user_id)
-            pastDate = user["second_time_verified"]
-        ist_timezone = pytz.timezone('Asia/Kolkata')
-        pastDate = pastDate.astimezone(ist_timezone)
+            return False
+
+        if verified_time is None:
+            return False
+
+        ist_timezone = pytz.timezone("Asia/Kolkata")
         current_time = datetime.datetime.now(tz=ist_timezone)
-        seconds_since_midnight = (current_time - datetime.datetime(current_time.year, current_time.month, current_time.day, 0, 0, 0, tzinfo=ist_timezone)).total_seconds()
-        time_diff = current_time - pastDate
-        total_seconds = time_diff.total_seconds()
-        return total_seconds <= seconds_since_midnight
+
+        if verified_time.tzinfo is None:
+            verified_time = ist_timezone.localize(verified_time)
+        else:
+            verified_time = verified_time.astimezone(ist_timezone)
+
+        expire_time = verified_time + datetime.timedelta(seconds=VERIFY_EXPIRE)
+
+        return current_time < expire_time
 
     async def use_second_shortener(self, user_id, time):
         user = await self.get_notcopy_user(user_id)
